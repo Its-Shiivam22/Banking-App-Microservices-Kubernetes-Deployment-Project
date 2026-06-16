@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: transaction-service
-          image: shiivam22/banking-transaction-service:v1-4
+          image: shiivam22/banking-transaction-service:v1-5
           ports:
             - containerPort: 3003
           env:
