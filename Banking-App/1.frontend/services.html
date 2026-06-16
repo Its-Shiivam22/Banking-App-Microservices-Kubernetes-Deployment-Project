@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecureBank | Services</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body onload="checkServicesHealth()">
+  <nav class="navbar">
+    <div class="brand">SecureBank</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="transactions.html">Transactions</a>
+      <a href="notifications.html">Notifications</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <div class="page-title">
+      <h1>Microservices Health</h1>
+      <p>Live health checks through Kubernetes Ingress routes.</p>
+    </div>
+
+    <section class="grid">
+      <div class="card service-card">
+        <h2>Auth Service</h2>
+        <p id="authHealth">Checking...</p>
+      </div>
+      <div class="card service-card">
+        <h2>Account Service</h2>
+        <p id="accountHealth">Checking...</p>
+      </div>
+      <div class="card service-card">
+        <h2>Transaction Service</h2>
+        <p id="transactionHealth">Checking...</p>
+      </div>
+      <div class="card service-card">
+        <h2>Notification Service</h2>
+        <p id="notificationHealth">Checking...</p>
+      </div>
+    </section>
+
+    <section class="card full">
+      <h2>Ingress Route Mapping</h2>
+      <div class="code-box">
+        / → frontend<br/>
+        /auth → auth-service<br/>
+        /account → account-service<br/>
+        /transactions → transaction-service<br/>
+        /notifications → notification-service
+      </div>
+    </section>
+  </main>
+
+  <footer>SecureBank Services</footer>
+  <script src="app.js"></script>
+</body>
+</html>

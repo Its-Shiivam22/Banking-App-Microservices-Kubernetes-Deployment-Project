@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: banking-config
+  namespace: banking
+data:
+  BANK_NAME: "SecureBank"
+  ENVIRONMENT: "Development"
+  REGION: "ap-south-1"

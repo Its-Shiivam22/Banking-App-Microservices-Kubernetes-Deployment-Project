@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecureBank | Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body onload="loadDashboard()">
+  <nav class="navbar">
+    <div class="brand">SecureBank</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="transactions.html">Transactions</a>
+      <a href="notifications.html">Notifications</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <div class="page-title">
+      <h1>Account Dashboard</h1>
+      <p>Account summary fetched from MySQL through account-service.</p>
+    </div>
+
+    <section class="grid">
+      <div class="card">
+        <p class="label">Account Holder</p>
+        <h2 id="accountHolder">Loading...</h2>
+      </div>
+
+      <div class="card">
+        <p class="label">Available Balance</p>
+        <h2 id="balance">Loading...</h2>
+      </div>
+
+      <div class="card">
+        <p class="label">Account Type</p>
+        <h2 id="accountType">Loading...</h2>
+      </div>
+
+      <div class="card">
+        <p class="label">Branch</p>
+        <h2 id="branch">Loading...</h2>
+      </div>
+    </section>
+
+    <section class="card full">
+      <h2>Account Details</h2>
+      <div class="detail-row"><span>Customer ID</span><strong id="customerIdView">--</strong></div>
+      <div class="detail-row"><span>Account Number</span><strong id="accountNumber">--</strong></div>
+      <div class="detail-row"><span>IFSC</span><strong id="ifsc">--</strong></div>
+      <div class="detail-row"><span>Data Source</span><strong>MySQL Database via account-service</strong></div>
+    </section>
+  </main>
+
+  <footer>SecureBank Dashboard</footer>
+  <script src="app.js"></script>
+</body>
+</html>

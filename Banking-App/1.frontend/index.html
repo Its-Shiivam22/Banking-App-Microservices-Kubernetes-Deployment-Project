@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecureBank | Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="brand">SecureBank</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="transactions.html">Transactions</a>
+      <a href="notifications.html">Notifications</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+    </div>
+  </nav>
+
+  <main class="hero-wrapper">
+    <section class="hero">
+      <div class="hero-content">
+        <span class="pill">AWS Kubernetes Microservices Project</span>
+        <h1>Secure Banking Platform Built with DevOps Practices</h1>
+        <p>
+          A multi-page banking demo application deployed on Kubernetes using Docker,
+          Jenkins CI/CD, NGINX Ingress, RBAC, HPA, Prometheus, Grafana, and MySQL.
+        </p>
+        <div class="hero-actions">
+          <a class="primary-link" href="dashboard.html">View Dashboard</a>
+          <a class="secondary-link" href="services.html">Check Services</a>
+        </div>
+      </div>
+
+      <div class="login-card">
+        <h2>Customer Login</h2>
+        <p class="small-text">DB-backed authentication through auth-service.</p>
+
+        <form id="loginForm">
+          <label>Customer ID</label>
+          <input id="customerId" type="text" value="SHIVAM001" required />
+
+          <label>Password</label>
+          <input id="password" type="password" value="demo123" required />
+
+          <button type="submit">Login Securely</button>
+        </form>
+
+        <p id="loginMessage" class="message"></p>
+
+        <div class="demo-creds">
+          <strong>Demo Credentials</strong>
+          <span>Customer ID: SHIVAM001</span>
+          <span>Password: demo123</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Docker + Kubernetes + AWS kOps + Jenkins + MySQL + Ingress + Monitoring
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

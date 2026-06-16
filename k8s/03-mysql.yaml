@@ -1,0 +1,186 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-script
+  namespace: banking
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS customers (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      customer_id VARCHAR(50) NOT NULL UNIQUE,
+      full_name VARCHAR(100) NOT NULL,
+      password VARCHAR(100) NOT NULL,
+      active BOOLEAN DEFAULT TRUE
+    );
+
+    CREATE TABLE IF NOT EXISTS accounts (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      customer_id VARCHAR(50) NOT NULL,
+      account_number VARCHAR(50) NOT NULL,
+      account_type VARCHAR(50) NOT NULL,
+      balance DECIMAL(12,2) NOT NULL,
+      branch VARCHAR(100) NOT NULL,
+      ifsc VARCHAR(30) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS transactions (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      customer_id VARCHAR(50) NOT NULL,
+      txn_date DATE NOT NULL,
+      description VARCHAR(255) NOT NULL,
+      txn_type VARCHAR(20) NOT NULL,
+      amount DECIMAL(12,2) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      customer_id VARCHAR(50) NOT NULL,
+      message VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    INSERT INTO customers (customer_id, full_name, password, active)
+    VALUES ('SHIVAM001', 'Shivam Ekale', 'demo123', TRUE)
+    ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), password = VALUES(password), active = VALUES(active);
+
+    INSERT INTO accounts (customer_id, account_number, account_type, balance, branch, ifsc)
+    SELECT 'SHIVAM001', 'XXXX-XXXX-2026', 'Savings Account', 84750.00, 'Pune Digital Branch', 'SBIN0002026'
+    WHERE NOT EXISTS (SELECT 1 FROM accounts WHERE customer_id = 'SHIVAM001');
+
+    INSERT INTO transactions (customer_id, txn_date, description, txn_type, amount)
+    SELECT 'SHIVAM001', '2026-06-14', 'UPI Payment to Amazon', 'Debit', -1299.00
+    WHERE NOT EXISTS (SELECT 1 FROM transactions WHERE customer_id = 'SHIVAM001' AND description = 'UPI Payment to Amazon');
+
+    INSERT INTO transactions (customer_id, txn_date, description, txn_type, amount)
+    SELECT 'SHIVAM001', '2026-06-13', 'Salary Credit', 'Credit', 45000.00
+    WHERE NOT EXISTS (SELECT 1 FROM transactions WHERE customer_id = 'SHIVAM001' AND description = 'Salary Credit');
+
+    INSERT INTO transactions (customer_id, txn_date, description, txn_type, amount)
+    SELECT 'SHIVAM001', '2026-06-12', 'Netflix Subscription', 'Debit', -649.00
+    WHERE NOT EXISTS (SELECT 1 FROM transactions WHERE customer_id = 'SHIVAM001' AND description = 'Netflix Subscription');
+
+    INSERT INTO transactions (customer_id, txn_date, description, txn_type, amount)
+    SELECT 'SHIVAM001', '2026-06-10', 'ATM Withdrawal', 'Debit', -2000.00
+    WHERE NOT EXISTS (SELECT 1 FROM transactions WHERE customer_id = 'SHIVAM001' AND description = 'ATM Withdrawal');
+
+    INSERT INTO notifications (customer_id, message)
+    SELECT 'SHIVAM001', 'Your salary has been credited successfully.'
+    WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE customer_id = 'SHIVAM001' AND message = 'Your salary has been credited successfully.');
+
+    INSERT INTO notifications (customer_id, message)
+    SELECT 'SHIVAM001', 'New login detected from Chrome browser.'
+    WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE customer_id = 'SHIVAM001' AND message = 'New login detected from Chrome browser.');
+
+    INSERT INTO notifications (customer_id, message)
+    SELECT 'SHIVAM001', 'Your monthly account statement is ready.'
+    WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE customer_id = 'SHIVAM001' AND message = 'Your monthly account statement is ready.');
+
+    INSERT INTO notifications (customer_id, message)
+    SELECT 'SHIVAM001', 'UPI transaction limit updated successfully.'
+    WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE customer_id = 'SHIVAM001' AND message = 'UPI transaction limit updated successfully.');
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: banking
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: banking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_DATABASE
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+            - name: mysql-init
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+        - name: mysql-init
+          configMap:
+            name: mysql-init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  namespace: banking
+spec:
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP
