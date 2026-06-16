@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: account-service
-          image: shiivam22/banking-account-service:v1-9
+          image: shiivam22/banking-account-service:v1-10
           ports:
             - containerPort: 3002
           env:

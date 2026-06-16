@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: banking-frontend
-          image: shiivam22/banking-frontend:v1-9
+          image: shiivam22/banking-frontend:v1-10
           ports:
             - containerPort: 80
           envFrom:
