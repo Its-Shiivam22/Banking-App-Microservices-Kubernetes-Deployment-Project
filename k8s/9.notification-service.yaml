@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: shiivam22/banking-notification-service:v1-5
+          image: shiivam22/banking-notification-service:v1-6
           ports:
             - containerPort: 3004
           env:
