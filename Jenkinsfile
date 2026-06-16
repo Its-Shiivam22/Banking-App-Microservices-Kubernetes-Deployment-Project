@@ -3,11 +3,15 @@ pipeline {
 
     environment {
         DOCKERHUB_USER = "shiivam22"
-        IMAGE_TAG = "v1"
-        NAMESPACE = "banking"
+        IMAGE_TAG = "v1-${BUILD_NUMBER}"
 
         APP_DIR = "Banking-App"
         K8S_DIR = "k8s"
+
+        GIT_USER_NAME = "Jenkins CI"
+        GIT_USER_EMAIL = "jenkins@local"
+
+        GITHUB_REPO = "Its-Shiivam22/Banking-App-Microservices-Kubernetes-Deployment-Project.git"
     }
 
     stages {
@@ -24,14 +28,14 @@ pipeline {
                 echo "Current workspace:"
                 pwd
 
-                echo "Repository files:"
+                echo "Repo root files:"
                 ls -la
 
                 echo "Application folders:"
-                ls -la $APP_DIR
+                ls -la "$APP_DIR"
 
                 echo "Kubernetes YAML files:"
-                ls -la $K8S_DIR
+                ls -la "$K8S_DIR"
                 '''
             }
         }
@@ -82,107 +86,61 @@ pipeline {
             }
         }
 
-        stage('Deploy Namespace, Secret, ConfigMap and MySQL') {
+        stage('Update Kubernetes YAML Image Tags') {
             steps {
                 sh '''
-                kubectl apply -f "$K8S_DIR/1.namespace.yaml"
+                echo "Updating image tags in Kubernetes YAML files..."
 
-                kubectl apply -f "$K8S_DIR/2.mysql-secret.yaml"
+                sed -i "s|image: $DOCKERHUB_USER/banking-frontend:.*|image: $DOCKERHUB_USER/banking-frontend:$IMAGE_TAG|g" "$K8S_DIR/5.frontend.yaml"
 
-                kubectl apply -f "$K8S_DIR/3.banking-configmap.yaml"
+                sed -i "s|image: $DOCKERHUB_USER/banking-auth-service:.*|image: $DOCKERHUB_USER/banking-auth-service:$IMAGE_TAG|g" "$K8S_DIR/6.auth-service.yaml"
 
-                kubectl apply -f "$K8S_DIR/4.mysql.yaml"
+                sed -i "s|image: $DOCKERHUB_USER/banking-account-service:.*|image: $DOCKERHUB_USER/banking-account-service:$IMAGE_TAG|g" "$K8S_DIR/7.account-service.yaml"
 
-                echo "Waiting for MySQL deployment..."
-                kubectl rollout status deployment/mysql -n $NAMESPACE --timeout=5m
+                sed -i "s|image: $DOCKERHUB_USER/banking-transaction-service:.*|image: $DOCKERHUB_USER/banking-transaction-service:$IMAGE_TAG|g" "$K8S_DIR/8.transaction-service.yaml"
+
+                sed -i "s|image: $DOCKERHUB_USER/banking-notification-service:.*|image: $DOCKERHUB_USER/banking-notification-service:$IMAGE_TAG|g" "$K8S_DIR/9.notification-service.yaml"
+
+                echo "Updated image tags:"
+                grep -R "image: $DOCKERHUB_USER" "$K8S_DIR"
                 '''
             }
         }
 
-        stage('Deploy Banking Microservices') {
+        stage('Commit Updated YAML to GitHub') {
             steps {
-                sh '''
-                kubectl apply -f "$K8S_DIR/5.frontend.yaml"
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-creds',
+                    usernameVariable: 'GIT_USERNAME',
+                    passwordVariable: 'GIT_TOKEN'
+                )]) {
+                    sh '''
+                    git config user.name "$GIT_USER_NAME"
+                    git config user.email "$GIT_USER_EMAIL"
 
-                kubectl apply -f "$K8S_DIR/6.auth-service.yaml"
+                    git status
 
-                kubectl apply -f "$K8S_DIR/7.account-service.yaml"
+                    git add "$K8S_DIR/5.frontend.yaml"
+                    git add "$K8S_DIR/6.auth-service.yaml"
+                    git add "$K8S_DIR/7.account-service.yaml"
+                    git add "$K8S_DIR/8.transaction-service.yaml"
+                    git add "$K8S_DIR/9.notification-service.yaml"
 
-                kubectl apply -f "$K8S_DIR/8.transaction-service.yaml"
+                    git commit -m "Update banking app image tags to $IMAGE_TAG" || echo "No changes to commit"
 
-                kubectl apply -f "$K8S_DIR/9.notification-service.yaml"
-                '''
+                    git push https://$GIT_USERNAME:$GIT_TOKEN@github.com/$GITHUB_REPO HEAD:main
+                    '''
+                }
             }
         }
 
-        stage('Apply Ingress, RBAC and HPA') {
+        stage('Argo CD Deployment Info') {
             steps {
                 sh '''
-                kubectl apply -f "$K8S_DIR/10.ingress-hostless.yaml"
-
-                kubectl apply -f "$K8S_DIR/12.rbac.yaml"
-
-                kubectl apply -f "$K8S_DIR/13.hpa.yaml" || true
-                '''
-            }
-        }
-
-        stage('Restart Deployments to Pull Latest v1 Images') {
-            steps {
-                sh '''
-                echo "Restarting deployments because image tag is fixed as v1..."
-
-                kubectl rollout restart deployment -n $NAMESPACE
-                '''
-            }
-        }
-
-        stage('Verify Rollout') {
-            steps {
-                sh '''
-                echo "Waiting for all deployments to complete..."
-
-                for deploy in $(kubectl get deployment -n $NAMESPACE -o name); do
-                    echo "Checking rollout for $deploy"
-                    kubectl rollout status $deploy -n $NAMESPACE --timeout=5m
-                done
-
-                echo "Pods:"
-                kubectl get pods -n $NAMESPACE -o wide
-
-                echo "Services:"
-                kubectl get svc -n $NAMESPACE
-
-                echo "Ingress:"
-                kubectl get ingress -n $NAMESPACE
-
-                echo "HPA:"
-                kubectl get hpa -n $NAMESPACE || true
-                '''
-            }
-        }
-
-        stage('Test DB Connected APIs') {
-            steps {
-                sh '''
-                echo "Testing auth-service internally..."
-
-                kubectl run curl-test-$BUILD_NUMBER \
-                  --image=curlimages/curl \
-                  --rm -i \
-                  --restart=Never \
-                  -n $NAMESPACE \
-                  -- curl -s http://auth-service:3001/auth/health || true
-
-                echo ""
-                echo "Testing account-service internally..."
-
-                kubectl run curl-test-account-$BUILD_NUMBER \
-                  --image=curlimages/curl \
-                  --rm -i \
-                  --restart=Never \
-                  -n $NAMESPACE \
-                  -- curl -s http://account-service:3002/account/health || true
+                echo "CI completed successfully."
+                echo "Docker images pushed with tag: $IMAGE_TAG"
+                echo "Updated Kubernetes YAML files pushed to GitHub."
+                echo "Argo CD will now detect Git changes and sync them to Kubernetes."
                 '''
             }
         }
@@ -190,7 +148,7 @@ pipeline {
 
     post {
         success {
-            echo 'Banking Microservices App deployed successfully using Jenkins CI/CD with image tag v1.'
+            echo 'Jenkins CI completed. Argo CD will handle Kubernetes deployment.'
         }
 
         failure {
