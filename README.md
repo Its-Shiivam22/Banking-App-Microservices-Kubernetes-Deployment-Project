@@ -201,8 +201,6 @@ Git
 Note: The Kubernetes cluster is not created inside this EC2 instance.
 This EC2 instance is used only as a control machine to run kOps commands. kOps will create separate AWS resources such as control plane nodes, worker nodes, networking resources, and load balancers.
 
-Open EC2 Dashboard
-
 Open AWS Console and go to:
 ```text
 AWS Console → EC2 → Instances → Launch Instance
@@ -239,9 +237,12 @@ For learning/demo purposes, attach:
 
 For production, use a least-privilege IAM policy instead of full administrator access.
 
-## 🌐 Cluster Overview
+---
 
-The Kubernetes cluster is created on AWS using kOps. kOps provisions the required AWS resources and configures the Kubernetes control plane and worker nodes.
+## 🌐 Setup kOps Cluster on EC2
+
+The Kubernetes cluster is created on AWS EC2 using kOps. 
+kOps provisions the required AWS resources and configures the Kubernetes control plane and worker nodes.
 
 | Component | Configuration |
 |---|---|
@@ -253,36 +254,172 @@ The Kubernetes cluster is created on AWS using kOps. kOps provisions the require
 | Networking | Calico |
 
 ---
-
-## 🔹 Configure AWS CLI
-
+## 🔹 Install AWS Cli 
+Installed AWS CLI V2 Using Shell Scripting
 ```bash
-aws configure
+#!/bin/bash
+
+set -e
+
+sudo dnf install --allowerasing curl
+
+echo "======================================"
+echo " Installing AWS CLI v2"
+echo "======================================"
+
+# Detect OS
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$ID
+else
+    echo "Unable to detect OS."
+    exit 1
+fi
+
+echo "Detected OS: $OS"
+
+# Install required packages
+echo "Installing required packages..."
+
+if [[ "$OS" == "ubuntu" || "$OS" == "debian" ]]; then
+    sudo apt update -y
+    sudo apt install -y curl unzip
+elif [[ "$OS" == "amzn" || "$OS" == "centos" || "$OS" == "rhel" || "$OS" == "rocky" || "$OS" == "almalinux" ]]; then
+    sudo yum update -y
+    sudo yum install -y curl unzip
+else
+    echo "Unsupported OS: $OS"
+    exit 1
+fi
+
+echo "Downloading AWS CLI v2..."
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+echo "Extracting AWS CLI package..."
+
+unzip -q awscliv2.zip
+
+echo "Installing AWS CLI..."
+
+sudo ./aws/install --update
+
+echo "Cleaning up temporary files..."
+
+rm -rf aws awscliv2.zip
+
+echo "======================================"
+echo " AWS CLI Installation Completed"
+echo "======================================"
+
+aws --version
+
 ```
 
-Verify AWS identity:
+<p align="center">
+  <img src="./screenshots/4.AWS CLI 1.png" width="1000">
+</p>
 
-```bash
-aws sts get-caller-identity
-```
+<p align="center">
+  <img src="./screenshots/4.AWS CLI 2.png" width="1000">
+</p>
 
 ---
 
-## 🔹 Set Environment Variables
+## 🔹 Install KubeCTL & kOps
+
 
 ```bash
-export AWS_REGION=ap-south-1
-export CLUSTER_NAME=banking.k8s.local
-export KOPS_STATE_STORE=s3://shivam-kops-state-store-banking
+#!/bin/bash
+
+set -e
+
+echo "======================================"
+echo " Installing kOps and kubectl"
+echo "======================================"
+
+# Detect OS
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$ID
+else
+    echo "Unable to detect OS."
+    exit 1
+fi
+
+echo "Detected OS: $OS"
+
+# Install required packages
+echo "Installing required packages..."
+
+if [[ "$OS" == "ubuntu" || "$OS" == "debian" ]]; then
+    sudo apt update -y
+    sudo apt install -y curl wget unzip
+elif [[ "$OS" == "amzn" || "$OS" == "centos" || "$OS" == "rhel" || "$OS" == "rocky" || "$OS" == "almalinux" ]]; then
+    sudo yum update -y
+    sudo yum install -y curl wget unzip
+else
+    echo "Unsupported OS: $OS"
+    exit 1
+fi
+
+echo "Required packages installed successfully."
+
+# Install kubectl
+echo "Installing kubectl..."
+
+KUBECTL_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt)
+
+curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/kubectl
+
+echo "kubectl installed successfully."
+
+# Install kOps
+echo "Installing kOps..."
+
+KOPS_VERSION=$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)
+
+if [ -z "$KOPS_VERSION" ]; then
+    echo "Unable to fetch latest kOps version. Installing v1.30.0 as fallback."
+    KOPS_VERSION="v1.30.0"
+fi
+
+curl -Lo kops "https://github.com/kubernetes/kops/releases/download/${KOPS_VERSION}/kops-linux-amd64"
+
+chmod +x kops
+sudo mv kops /usr/local/bin/kops
+
+echo "kOps installed successfully."
+
+# Verify installation
+echo "======================================"
+echo " Installation Completed"
+echo "======================================"
+
+echo "kubectl version:"
+kubectl version --client
+
+echo "--------------------------------------"
+
+echo "kOps version:"
+kops version
+
+echo "======================================"
+echo " kOps and kubectl are ready to use"
+echo "======================================"
 ```
+<p align="center">
+  <img src="./screenshots/5.KubeCTL-kOps.png" width="1000">
+</p>
 
----
-
-## 🔹 Create S3 State Store
+### Create S3 Buket for kOps State Store
 
 ```bash
 aws s3api create-bucket \
-  --bucket shivam-kops-state-store-banking \
+  --bucket shiivam22-kops-state-store \
   --region ap-south-1 \
   --create-bucket-configuration LocationConstraint=ap-south-1
 ```
@@ -291,35 +428,125 @@ Enable versioning:
 
 ```bash
 aws s3api put-bucket-versioning \
-  --bucket shivam-kops-state-store-banking \
+  --bucket shiivam22-kops-state-store \
   --versioning-configuration Status=Enabled
 ```
-
----
-
-## 🔹 Create SSH Key
-
+& Export 
 ```bash
-ssh-keygen -t rsa -b 4096 -f ~/.ssh/kops-key
+export KOPS_STATE_STORE=s3://shiivam22-kops-state-store
+
+echo 'export KOPS_STATE_STORE=s3://shiivam22-kops-state-store' >> ~/.bashrc
+source ~/.bashrc
 ```
 
+<p align="center">
+  <img src="./screenshots/6.kOps-State-Store.png" width="1000">
+</p>
+
 ---
+
+## 🔹 Instakking Required Tools 
+
+```bash
+Docker
+Jenkins
+Helm
+Argo CD
+```
+### Docker:
+```bash
+sudo dnf install docker -y
+systemctl enable docker
+systemctl start docker
+```
+<p align="center">
+  <img src="./screenshots/7.Docker.png" width="1000">
+</p>
+
+```bash
+systemcrl status docker 
+```
+
+<p align="center">
+  <img src="./screenshots/8.Docker-Status.png" width="1000">
+</p>
+
+---
+
+### Jenkins:
+```bash
+!/bin/bash
+
+# Jenkins Installation Script for Amazon Linux 2023
+
+sudo dnf update -y
+
+sudo dnf install -y java-21-amazon-corretto-devel
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+https://pkg.jenkins.io/redhat-stable/jenkins.repo
+
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+sudo dnf install -y jenkins
+
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+
+sudo systemctl status jenkins
+
+```
+
+<p align="center">
+  <img src="./screenshots/9.jenkins.png" width="1000">
+</p>
+
+```bash
+systemctl status jenkins.service
+```
+
+<p align="center">
+  <img src="./screenshots/10.jenkins-status.png" width="1000">
+</p>
+
+---
+
+### Helm:
+```bash
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+<p align="center">
+  <img src="./screenshots/11.helm.png" width="1000">
+</p>
+
+---
+
 
 ## 🔹 Create kOps Cluster
 
+Create Cluster:
 ```bash
-kops create cluster \
-  --name ${CLUSTER_NAME} \
-  --state ${KOPS_STATE_STORE} \
-  --zones ap-south-1b \
-  --node-count 2 \
-  --node-size t3.small \
-  --control-plane-count 1 \
-  --control-plane-size c7i-flex.large \
-  --ssh-public-key ~/.ssh/kops-key.pub \
-  --networking calico \
-  --yes
+kops create cluster --name dev.k8s.local --zones ap-south-1b --control-plane-count 1 --control-plane-size c7i-flex.large --node-count 2 --node-size t3.small --networking calico --state ${KOPS_STATE_STORE}
 ```
+```bash
+kops update cluster --name dev.k8s.local --yes --admin
+```
+<p align="center">
+  <img src="./screenshots/12.Create-Cluster.png" width="1000">
+</p>
+
+<p align="center">
+  <img src="./screenshots/13.Update-Cluster.png" width="1000">
+</p>
+
+Validate Cluster:
+```bash
+kops validate cluster --wait 10m
+```
+<p align="center">
+  <img src="./screenshots/14.Validate-Cluster.png" width="1000">
+</p>
 
 ---
 
