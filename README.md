@@ -842,7 +842,7 @@ kubectl apply -f k8s/11.ingress-domain.yaml
 kubectl describe ingress banking-ingress -n banking
 ```
 <p align="center">
-  <img src="./screenshots/screenshots/47.Ingress-Domain.png" width="1000">
+  <img src="./screenshots/47.Ingress-Domain.png" width="1000">
 </p>
 
 ### Create A DNS Record
@@ -863,7 +863,7 @@ nslookup bank.shivamekale.in
 ```
 
 <p align="center">
-  <img src="./screenshots/screenshots/48.nslookup.png" width="1000">
+  <img src="./screenshots/48.nslookup.png" width="1000">
 </p
 
 ---
@@ -1177,7 +1177,7 @@ kubectl get hpa -n banking
 ```
 
 <p align="center">
-  <img src="./Screenshots/46.HPA.png" width="1000">
+  <img src="./screenshots/46.HPA.png" width="1000">
 </p>
 
 ---
@@ -1234,23 +1234,23 @@ kubectl get all -n banking
 ## 🖼️ Application Screenshots
 
 <p align="center">
-  <img src="./Screenshots/51.Home.png" width="1000">
+  <img src="./screenshots/51.Home.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/52.DashBoard.png" width="1000">
+  <img src="./screenshots/52.DashBoard.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/53.Transactions.png" width="1000">
+  <img src="./screenshots/53.Transactions.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/54.Notifications.png" width="1000">
+  <img src="./screenshots/54.Notifications.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/55.Health.png" width="1000">
+  <img src="./screenshots/55.Health.png" width="1000">
 </p>
 
 ---
