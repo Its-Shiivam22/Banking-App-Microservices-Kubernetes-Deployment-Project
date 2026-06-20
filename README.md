@@ -695,11 +695,11 @@ kubectl get svc -n banking
 ### Screenshot
 
 <p align="center">
-  <img src="./Screenshots/24.Get-pods.png" width="1000">
+  <img src="./screenshots/24.Get-pods.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/25.Get-svc.png" width="1000">
+  <img src="./screenshots/25.Get-svc.png" width="1000">
 </p>
 
 ---
@@ -740,22 +740,22 @@ kubectl exec -it deployment/mysql -n banking -- mysql -u securebank_user -pSecur
 ```sql
 SHOW TABLES;
 SELECT * FROM customers;
-SELECT * FROM accounts;
 SELECT * FROM transactions;
-SELECT * FROM notifications;
 ```
 
-### Screenshot
-
 <p align="center">
-  <img src="./Screenshots/8.mysql-tables.png" width="1000">
-</p>
-
-<p align="center">
-  <img src="./Screenshots/9.customers-table.png" width="1000">
+  <img src="./screenshots/26.Verify Tables.png" width="1000">
 </p>
 
 ---
+
+## 🔹 Test DB Connection
+```bash
+kubectl logs deployment/auth-service -n banking
+```
+<p align="center">
+  <img src="./screenshots/26.Test-DB.png" width="1000">
+</p>
 
 ## 🔹 Test Login API
 
@@ -776,6 +776,10 @@ Expected response:
 }
 ```
 
+<p align="center">
+  <img src="./screenshots/27.Test-LoginAPI.png" width="1000">
+</p>
+
 ---
 
 # 📌 Part 5: NGINX Ingress and AWS Load Balancer
@@ -792,12 +796,27 @@ NGINX Ingress Controller is used to expose the banking application outside the K
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.3/deploy/static/provider/aws/deploy.yaml
 ```
 
+<p align="center">
+  <img src="./screenshots/28.Install-Ingress 1.png" width="1000">
+</p>
+
 Check controller:
 
 ```bash
 kubectl get pods -n ingress-nginx
 kubectl get svc -n ingress-nginx
 ```
+
+<p align="center">
+  <img src="./screenshots/28.Install-Ingress 2.png" width="1000">
+</p>
+
+<p align="center">
+  <img src="./screenshots/29.Ingress Svc.png" width="1000">
+</p>
+
+Application URL:
+```http://YOUR-AWS-LOAD-BALANCER-DNS```
 
 ---
 
@@ -813,23 +832,10 @@ Check ingress:
 kubectl get ingress -n banking
 ```
 
-Get Load Balancer DNS:
-
-```bash
-kubectl get svc ingress-nginx-controller -n ingress-nginx
-```
-
-Application URL:
-
-```text
-http://YOUR-AWS-LOAD-BALANCER-DNS
-```
-
-### Screenshot
-
 <p align="center">
-  <img src="./Screenshots/11.ingress-loadbalancer.png" width="1000">
+  <img src="./screenshots/30.Hostless-Ingress.png" width="1000">
 </p>
+
 
 ---
 
