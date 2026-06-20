@@ -550,46 +550,7 @@ kops validate cluster --wait 10m
 
 ---
 
-## 🔹 Export kubeconfig
-
-```bash
-kops export kubecfg \
-  --name ${CLUSTER_NAME} \
-  --state ${KOPS_STATE_STORE} \
-  --admin
-```
-
----
-
-## 🔹 Validate Cluster
-
-```bash
-kops validate cluster \
-  --name ${CLUSTER_NAME} \
-  --state ${KOPS_STATE_STORE} \
-  --wait 10m
-```
-
-Check nodes:
-
-```bash
-kubectl get nodes
-```
-
-### Screenshot
-
-<p align="center">
-  <img src="./Screenshots/2.kops-validate-cluster.png" width="1000">
-</p>
-
-<p align="center">
-  <img src="./Screenshots/3.kubectl-get-nodes.png" width="1000">
-</p>
-
----
-
-# 📌 Part 2: Docker Image Build and Push
-
+# 📌 Part 2: Build and Push Docker Images 
 ## 🐳 Docker Overview
 
 Each microservice has a separate Dockerfile and is pushed as an independent image to DockerHub.
@@ -603,18 +564,9 @@ shiivam22/banking-account-service
 shiivam22/banking-transaction-service
 shiivam22/banking-notification-service
 ```
-
 ---
 
-## 🔹 Docker Login
-
-```bash
-docker login
-```
-
----
-
-## 🔹 Build Docker Images
+### 🔹 Build Docker Images
 
 ```bash
 docker build -t shiivam22/banking-frontend:v1 ./Banking-App/1.frontend
@@ -623,10 +575,20 @@ docker build -t shiivam22/banking-account-service:v1 ./Banking-App/3.account-ser
 docker build -t shiivam22/banking-transaction-service:v1 ./Banking-App/4.transaction-service
 docker build -t shiivam22/banking-notification-service:v1 ./Banking-App/5.notification-service
 ```
+<p align="center">
+  <img src="./screenshots/15.DockerImg1.png" width="1000">
+</p>
 
----
+<p align="center">
+  <img src="./screenshots/16.Docker-Images.png" width="1000">
+</p>
 
-## 🔹 Push Docker Images
+
+### 🔹 Docker Login Push Docker Images To Docker Hub
+
+```bash
+docker login
+```
 
 ```bash
 docker push shiivam22/banking-frontend:v1
@@ -635,15 +597,12 @@ docker push shiivam22/banking-account-service:v1
 docker push shiivam22/banking-transaction-service:v1
 docker push shiivam22/banking-notification-service:v1
 ```
-
-### Screenshot
-
 <p align="center">
-  <img src="./Screenshots/4.docker-images.png" width="1000">
+  <img src="./screenshots/17.Docker-login-Push.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/5.dockerhub-images.png" width="1000">
+  <img src="./screenshots/18.Docker Hub.png" width="1000">
 </p>
 
 ---
@@ -674,6 +633,10 @@ HorizontalPodAutoscaler
 kubectl apply -f k8s/1.namespace.yaml
 ```
 
+<p align="center">
+  <img src="./screenshots/19.Namespace.png" width="1000">
+</p>
+
 ---
 
 ## 🔹 Apply Secret and ConfigMap
@@ -683,6 +646,10 @@ kubectl apply -f k8s/2.mysql-secret.yaml
 kubectl apply -f k8s/3.banking-configmap.yaml
 ```
 
+<p align="center">
+  <img src="./screenshots/20.Deployments.png" width="1000">
+</p>
+
 ---
 
 ## 🔹 Deploy MySQL
@@ -691,6 +658,14 @@ kubectl apply -f k8s/3.banking-configmap.yaml
 kubectl apply -f k8s/4.mysql.yaml
 kubectl rollout status deployment/mysql -n banking --timeout=5m
 ```
+
+<p align="center">
+  <img src="./screenshots/21.mysql.png" width="1000">
+</p>
+
+<p align="center">
+  <img src="./screenshots/22.rollout.png" width="1000">
+</p>
 
 ---
 
@@ -704,24 +679,27 @@ kubectl apply -f k8s/8.transaction-service.yaml
 kubectl apply -f k8s/9.notification-service.yaml
 ```
 
+<p align="center">
+  <img src="./screenshots/23.Deployments-2.png" width="1000">
+</p>
+
 ---
 
 ## 🔹 Verify Deployment
 
 ```bash
-kubectl get pods -n banking -o wide
-kubectl get deploy -n banking
+kubectl get pods -n banking
 kubectl get svc -n banking
 ```
 
 ### Screenshot
 
 <p align="center">
-  <img src="./Screenshots/6.kubernetes-pods.png" width="1000">
+  <img src="./Screenshots/24.Get-pods.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/7.kubernetes-services.png" width="1000">
+  <img src="./Screenshots/25.Get-svc.png" width="1000">
 </p>
 
 ---
