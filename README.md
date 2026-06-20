@@ -954,31 +954,35 @@ kubectl apply -n argocd \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
+<p align="center">
+  <img src="./screenshots/37.Install-ArgoCD.png" width="1000">
+</p>
+
+
 Check pods:
 
 ```bash
 kubectl get pods -n argocd
 ```
 
+<p align="center">
+  <img src="./screenshots/38.Get-pods-Argocd.png" width="1000">
+</p>
+
 ---
 
 ## 🔹 Access Argo CD UI
 
 ```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
 ```
 
-Open:
-
-```text
-https://localhost:8080
-```
+<p align="center">
+  <img src="./screenshots/39.Argocd-patch.png" width="1000">
+</p>
 
 Username:
-
-```text
-admin
-```
+```admin```
 
 Get password:
 
@@ -988,9 +992,15 @@ kubectl get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 --decode
 ```
 
+<p align="center">
+  <img src="./screenshots/40.Argocd-ui.png" width="1000">
+</p>
+
 ---
 
 ## 🔹 Create Argo CD Application
+
+### Using Yaml File:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -1019,30 +1029,28 @@ spec:
 ```
 
 Apply:
-
-```bash
-kubectl apply -f argocd-banking-app.yaml
-```
+```kubectl apply -f argocd-banking-app.yaml```
 
 Check:
+```kubectl get applications -n argocd```
 
-```bash
-kubectl get applications -n argocd
+### Trough GUI:
+
+<p align="center">
+  <img src="./screenshots/41.GUI1.png" width="1000">
+</p>
+
+<p align="center">
+  <img src="./screenshots/42.GUI2.png" width="1000">
+</p>
+
+```text
+Argo CD --> Continious Deployments
 ```
-
-### Screenshot
-
 <p align="center">
-  <img src="./Screenshots/15.argocd-pods.png" width="1000">
+  <img src="./screenshots/43.GUI3.png" width="1000">
 </p>
 
-<p align="center">
-  <img src="./Screenshots/16.argocd-application.png" width="1000">
-</p>
-
-<p align="center">
-  <img src="./Screenshots/17.argocd-synced-healthy.png" width="1000">
-</p>
 
 ---
 
