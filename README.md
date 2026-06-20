@@ -1189,7 +1189,7 @@ kubectl get hpa -n banking
 Open:
 
 ```text
-http://YOUR-AWS-LOAD-BALANCER-DNS
+http://bank.shivamekale.in
 ```
 
 Login:
