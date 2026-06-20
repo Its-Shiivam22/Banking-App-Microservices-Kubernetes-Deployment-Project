@@ -1076,9 +1076,7 @@ RoleBinding: banking-read-only-binding
 kubectl apply -f k8s/12.rbac.yaml
 ```
 
----
-
-## 🔹 Test RBAC
+### 🔹 Test RBAC
 
 Allowed:
 
@@ -1111,7 +1109,7 @@ no
 ### Screenshot
 
 <p align="center">
-  <img src="./Screenshots/18.rbac-test.png" width="1000">
+  <img src="./screenshots/44.Rbac.png" width="1000">
 </p>
 
 ---
@@ -1130,6 +1128,10 @@ Horizontal Pod Autoscaler automatically scales pods based on CPU utilization.
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 ```
 
+<p align="center">
+  <img src="./screenshots/45.Install Metric-Server .png" width="1000">
+</p>
+
 ---
 
 ## 🔹 Apply HPA
@@ -1144,10 +1146,8 @@ Check HPA:
 kubectl get hpa -n banking
 ```
 
-### Screenshot
-
 <p align="center">
-  <img src="./Screenshots/19.hpa-output.png" width="1000">
+  <img src="./Screenshots/46.HPA.png" width="1000">
 </p>
 
 ---
@@ -1169,6 +1169,10 @@ Customer ID: SHIVAM001
 Password: demo123
 ```
 
+<p align="center">
+  <img src="./screenshots/18.rbac-test.png" width="1000">
+</p>
+
 ---
 
 ## ✅ Test Health Endpoints
@@ -1179,6 +1183,9 @@ curl http://YOUR-AWS-LOAD-BALANCER-DNS/account/health
 curl http://YOUR-AWS-LOAD-BALANCER-DNS/transactions/health
 curl http://YOUR-AWS-LOAD-BALANCER-DNS/notifications/health
 ```
+<p align="center">
+  <img src="./screenshots/18.rbac-test.png" width="1000">
+</p>
 
 ---
 
@@ -1194,21 +1201,7 @@ kubectl get hpa -n banking
 
 ---
 
-# 🎥 Application Demo Video
-
-This video demonstrates the working deployment of the **Banking Microservices Kubernetes Project**, including frontend access, DB-backed login, service routing, Jenkins CI, Argo CD GitOps sync, RBAC, and HPA.
-
-<p align="center">
-  <a href="YOUR-YOUTUBE-DEMO-LINK">
-    <img src="./Screenshots/20.demo-thumbnail.png" width="700">
-  </a>
-</p>
-
-<h4 align="center">📌 Click on the image above to watch the full demo on YouTube.</h4>
-
----
-
-## 🖼️ Screenshots
+## 🖼️ Application Screenshots
 
 <p align="center">
   <img src="./Screenshots/21.homepage.png" width="1000">
@@ -1234,27 +1227,7 @@ This video demonstrates the working deployment of the **Banking Microservices Ku
 
 # 🛠️ Challenges Faced
 
-## 1. Jenkins DockerHub Credentials Error
-
-### Challenge
-
-Jenkins failed with:
-
-```text
-ERROR: Could not find credentials entry with ID 'dockerhub-creds'
-```
-
-### Solution
-
-Created Jenkins credentials with the exact ID:
-
-```text
-dockerhub-creds
-```
-
----
-
-## 2. Avoiding Jenkins Webhook Loop
+## 1. Avoiding Jenkins Webhook Loop
 
 ### Challenge
 
@@ -1266,7 +1239,7 @@ Added `[skip ci]` in Jenkins commit messages to prevent infinite build loops.
 
 ---
 
-## 3. Argo CD Image Update Detection
+## 2. Argo CD Image Update Detection
 
 ### Challenge
 
@@ -1282,17 +1255,6 @@ v1-${BUILD_NUMBER}
 
 ---
 
-## 4. Database Connectivity
-
-### Challenge
-
-Backend microservices needed to connect to MySQL inside Kubernetes.
-
-### Solution
-
-Used Kubernetes Secrets, ConfigMaps, internal service discovery, and environment variables.
-
----
 
 # 💰 Cost Optimization
 
@@ -1338,58 +1300,6 @@ This project demonstrates hands-on experience with:
 - Horizontal Pod Autoscaler
 - Kubernetes troubleshooting
 - Complete DevOps CI/CD workflow
-
----
-
-# 🧹 Cleanup
-
-## Delete Application Namespace
-
-```bash
-kubectl delete namespace banking
-```
-
----
-
-## Delete Argo CD
-
-```bash
-kubectl delete namespace argocd
-```
-
----
-
-## Delete NGINX Ingress Controller
-
-```bash
-kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.3/deploy/static/provider/aws/deploy.yaml
-```
-
----
-
-## Delete kOps Cluster
-
-```bash
-export CLUSTER_NAME=banking.k8s.local
-export KOPS_STATE_STORE=s3://shivam-kops-state-store-banking
-
-kops delete cluster \
-  --name ${CLUSTER_NAME} \
-  --state ${KOPS_STATE_STORE} \
-  --yes
-```
-
----
-
-## Delete kOps S3 State Store
-
-```bash
-aws s3 rm s3://shivam-kops-state-store-banking --recursive
-
-aws s3api delete-bucket \
-  --bucket shivam-kops-state-store-banking \
-  --region ap-south-1
-```
 
 ---
 
