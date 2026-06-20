@@ -836,8 +836,38 @@ kubectl get ingress -n banking
   <img src="./screenshots/30.Hostless-Ingress.png" width="1000">
 </p>
 
+## 🔹 Ingress Domain
+```bash
+kubectl apply -f k8s/11.ingress-domain.yaml
+kubectl describe ingress banking-ingress -n banking
+```
+<p align="center">
+  <img src="./screenshots/screenshots/47.Ingress-Domain.png" width="1000">
+</p>
+
+### Create A DNS Record
+```text
+Type: CNAME
+Name: bank
+Value: a0d676aee740c4c1b8d26c0c29c419ff-d247b9825fc66708.elb.ap-south-1.amazonaws.com
+TTL: 600
+```
+
+<p align="center">
+  <img src="./screenshots/47.Dns-Record.png" width="1000">
+</p
+
+### Verify
+```bash
+nslookup bank.shivamekale.in
+```
+
+<p align="center">
+  <img src="./screenshots/screenshots/48.nslookup.png" width="1000">
+</p
 
 ---
+
 
 # 📌 Part 6: Jenkins CI Pipeline
 
@@ -1170,7 +1200,7 @@ Password: demo123
 ```
 
 <p align="center">
-  <img src="./screenshots/18.rbac-test.png" width="1000">
+  <img src="./screenshots/51.Home.png" width="1000">
 </p>
 
 ---
@@ -1178,13 +1208,13 @@ Password: demo123
 ## ✅ Test Health Endpoints
 
 ```bash
-curl http://YOUR-AWS-LOAD-BALANCER-DNS/auth/health
-curl http://YOUR-AWS-LOAD-BALANCER-DNS/account/health
-curl http://YOUR-AWS-LOAD-BALANCER-DNS/transactions/health
-curl http://YOUR-AWS-LOAD-BALANCER-DNS/notifications/health
+curl -i http://bank.shivamekale.in/auth/health
+curl -i http://bank.shivamekale.in/account/health
+curl -i http://bank.shivamekale.in/transactions/health
+curl -i http://bank.shivamekale.in/notifications/health
 ```
 <p align="center">
-  <img src="./screenshots/18.rbac-test.png" width="1000">
+  <img src="./screenshots/screenshots/49.Verify-Apis.png" width="1000">
 </p>
 
 ---
@@ -1193,34 +1223,34 @@ curl http://YOUR-AWS-LOAD-BALANCER-DNS/notifications/health
 
 ```bash
 kubectl get all -n banking
-kubectl get pods -n banking -o wide
-kubectl get svc -n banking
-kubectl get ingress -n banking
-kubectl get hpa -n banking
 ```
+
+<p align="center">
+  <img src="./screenshots/screenshots/50.Verify.png" width="1000">
+</p>
 
 ---
 
 ## 🖼️ Application Screenshots
 
 <p align="center">
-  <img src="./Screenshots/21.homepage.png" width="1000">
+  <img src="./Screenshots/51.Home.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/22.login-success.png" width="1000">
+  <img src="./Screenshots/52.DashBoard.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/23.dashboard-page.png" width="1000">
+  <img src="./Screenshots/53.Transactions.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/24.transactions-page.png" width="1000">
+  <img src="./Screenshots/54.Notifications.png" width="1000">
 </p>
 
 <p align="center">
-  <img src="./Screenshots/25.notifications-page.png" width="1000">
+  <img src="./Screenshots/55.Health.png" width="1000">
 </p>
 
 ---
